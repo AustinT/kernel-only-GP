@@ -1,29 +1,32 @@
-# Python Template
+# Kernel only GP
 
-**Project description here**
-
-This is a template project so I don't need to keep setting up pre-commit.
+Contains a very minimal python package to do GP inference given only kernel matrices (not underlying data points).
+Potentially useful if working with data that cannot be stored as a tensor.
 
 ## Development
 
 ### Installation
 
-**Installation instructions here**
+For now, just add the project's directory to the `PYTHONPATH`.
 
 ### Formatting
 
-Use pre-commit to enforce formatting, large file checks, etc.
-
-If not already installed in your environment, run:
-
-```bash
-conda install pre-commit
-```
-
-To install the precommit hooks:
+Be sure to install pre-commit hooks:
 
 ```bash
 pre-commit install
 ```
 
-Now a series of useful checks will be run before any commit.
+### Testing
+
+Minimal tests can be run with:
+
+```bash
+python -m pytest
+```
+
+## Future to-do items
+
+- Convert implementation to Jax for autodiff?
+- Include classes for a fixed GP (e.g. for inference)
+- Make into a proper package
