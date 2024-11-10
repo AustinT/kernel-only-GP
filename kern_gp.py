@@ -1,5 +1,8 @@
 """
-Contains code for zero-mean GP with kernal a*k(x,x) + s*I for some base kernel k.
+Contains code for zero-mean GP with kernel a*k(x,x) + s*I for some base kernel k.
+
+Throughout, the following notation is used:
+- L is the Cholesky decomposition of (K + (s/a)I), where K is the kernel matrix between training points.
 """
 import logging
 
@@ -13,9 +16,13 @@ logger = logging.getLogger(__name__)
 def mll_train(a, s, k_train_train, y_train):
     """Computes the marginal log likelihood of the training data."""
     L = _k_cholesky(k_train_train, s / a)
+    return _L_mll_train(a, L, y_train)
+
+
+def _L_mll_train(a, L, y_train):
     data_fit = _data_fit(L, a, y_train)
     complexity = _complexity(L, a)
-    constant = -k_train_train.shape[0] / 2 * jnp.log(2 * jnp.pi)
+    constant = -L.shape[0] / 2 * jnp.log(2 * jnp.pi)
     return data_fit + complexity + constant
 
 
@@ -27,6 +34,10 @@ def noiseless_predict(a, s, k_train_train, k_test_train, k_test_test, y_train, f
     """
 
     L = _k_cholesky(k_train_train, s / a)
+    return _L_noiseless_predict(a, L, k_test_train, k_test_test, y_train, full_covar)
+
+
+def _L_noiseless_predict(a, L, k_test_train, k_test_test, y_train, full_covar: bool = True):
     mean = jnp.dot(k_test_train, cho_solve((L, LOWER), y_train))
     covar_adj_sqrt = solve_triangular(L, k_test_train.T, lower=LOWER)
     if full_covar:
