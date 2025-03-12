@@ -66,3 +66,20 @@ def _complexity(L, a):
     log_det_L = -jnp.sum(jnp.log(jnp.diag(L)))  # because we use cholesky, the factor of 2 cancels so no -1/2
     a_adjustment = -jnp.log(a) * L.shape[0] / 2
     return log_det_L + a_adjustment
+
+
+def update_cholesky(L, k_new, k_new_new):
+    """Efficiently update Cholesky factor given a new obervation"""
+    
+    v = solve_triangular(L, k_new, lower=True)
+    
+    # Calculate the new diagonal element
+    s = jnp.sqrt(k_new_new - jnp.sum(v**2))
+    
+    # Form the new Cholesky factor
+    n = L.shape[0]
+    top_block = jnp.concatenate([L, jnp.zeros((n, 1))], axis=1)
+    bottom_row = jnp.concatenate([v, jnp.array([s])])
+    L_new = jnp.concatenate([top_block, bottom_row.reshape(1, n+1)], axis=0)
+    
+    return L_new
