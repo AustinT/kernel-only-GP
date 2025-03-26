@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import torch
 
-from kern_gp import mll_train, noiseless_predict
+from kern_gp import mll_train, noiseless_predict, _k_cholesky
 
 X_train = jnp.array([[1, 2, 3], [4, 5, 6]]) / 5
 y_train = jnp.array([0.5, 1.0])
@@ -92,3 +92,36 @@ def test_noiseless_predict(outputscale, noise, full_covar):
     # Test: are they close?
     assert jnp.allclose(mu_true, our_mu)
     assert jnp.allclose(covar_true, our_covar, rtol=1e-5)
+
+
+def test_update_cholesky():
+    # Create a simple kernel matrix
+    K = jnp.array([
+        [1.0, 0.5, 0.3],
+        [0.5, 1.0, 0.2],
+        [0.3, 0.2, 1.0]
+    ])
+    noise = 0.1
+    
+    # Compute the Cholesky decomposition
+    L = _k_cholesky(K, noise)
+    
+    # New data point
+    k_new = jnp.array([0.4, 0.6, 0.1])  # Similarities to existing points
+    k_new_new = 1.0                     # Self-similarity of new point
+    
+    # Update the Cholesky
+    L_updated = kgp.update_cholesky(L, k_new, k_new_new)
+    
+    # Build the updated kernel matrix
+    K_new = jnp.zeros((4, 4))
+    K_new = K_new.at[:3, :3].set(K)
+    K_new = K_new.at[:3, 3].set(k_new)
+    K_new = K_new.at[3, :3].set(k_new)
+    K_new = K_new.at[3, 3].set(k_new_new)
+    
+    # Compute the Cholesky from scratch for comparison
+    L_expected = jnp.linalg.cholesky(K_new)
+    
+    # Test: are they close?
+    assert jnp.allclose(L_updated, L_expected, rtol=1e-5)
