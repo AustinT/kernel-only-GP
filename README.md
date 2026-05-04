@@ -32,7 +32,7 @@ The kernel matrices should use the **base kernel** (without the output scale `a`
 ## Installation
 
 ```bash
-pip install kern_gp
+pip install kern-gp
 ```
 
 ## Development
