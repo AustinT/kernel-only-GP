@@ -5,21 +5,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Install (editable, with dev deps)
-pip install -e ".[dev]"
+# Install all deps (including dev group)
+uv sync
 
 # Install pre-commit hooks (required before committing)
-pre-commit install
+uv run pre-commit install
 
 # Run all tests
-python -m pytest
+uv run pytest
 
 # Run a single test
-python -m pytest test_kern_gp.py::test_mll_train
+uv run pytest test_kern_gp.py::test_mll_train
 
 # Lint and format (also runs automatically on commit)
-black .
-ruff check . --fix
+uv run black .
+uv run ruff check . --fix
 ```
 
 Line length is 120 (configured in `pyproject.toml` for both black and ruff).
